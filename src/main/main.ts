@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, dialog } from 'electron';
+import { app, BrowserWindow, ipcMain, dialog, Menu } from 'electron';
 import * as path from 'path';
 import Store from 'electron-store';
 import { RegistryClient } from '../lib/registryClient';
@@ -17,6 +17,9 @@ function createWindow() {
       contextIsolation: true,
     },
   });
+
+  // Remove default menu (can be accessed with Alt key on Windows/Linux)
+  Menu.setApplicationMenu(null);
 
   // In development, __dirname is dist/main, so we go up to project root then to src/renderer
   // In production (packaged), the file will be in the app.asar or extracted

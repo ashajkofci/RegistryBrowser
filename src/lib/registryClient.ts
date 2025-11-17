@@ -14,6 +14,8 @@ export interface Manifest {
   config?: any;
   layers?: any[];
   manifests?: any[];
+  size?: number;
+  createdDate?: string;
   [key: string]: any;
 }
 
@@ -100,7 +102,44 @@ export class RegistryClient {
           'Accept': 'application/vnd.docker.distribution.manifest.v2+json, application/vnd.docker.distribution.manifest.list.v2+json, application/vnd.oci.image.manifest.v1+json',
         },
       });
-      return response.data;
+      
+      const manifest = response.data;
+      
+      // Add size from Content-Length header if available
+      const contentLength = response.headers['content-length'];
+      if (contentLength) {
+        manifest.size = parseInt(contentLength, 10);
+      }
+      
+      // Calculate total size from layers if available
+      if (manifest.layers && Array.isArray(manifest.layers)) {
+        const totalSize = manifest.layers.reduce((sum: number, layer: any) => {
+          return sum + (layer.size || 0);
+        }, 0);
+        if (totalSize > 0) {
+          manifest.size = totalSize;
+        }
+      }
+      
+      // Add date from Last-Modified or Date header
+      const lastModified = response.headers['last-modified'] || response.headers['date'];
+      if (lastModified) {
+        manifest.createdDate = new Date(lastModified).toISOString();
+      }
+      
+      // Try to get created date from config if it's a v2 manifest
+      if (manifest.config && manifest.config.digest) {
+        try {
+          const configResponse = await this.client.get(`/v2/${repository}/blobs/${manifest.config.digest}`);
+          if (configResponse.data && configResponse.data.created) {
+            manifest.createdDate = configResponse.data.created;
+          }
+        } catch (configError) {
+          // If we can't get the config, just use the header date
+        }
+      }
+      
+      return manifest;
     } catch (error) {
       if (axios.isAxiosError(error)) {
         if (error.response?.status === 404) {

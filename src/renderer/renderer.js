@@ -218,11 +218,46 @@ async function showManifest(repository, tag) {
 
     const manifest = result.manifest;
     
+    // Format size
+    const formatSize = (bytes) => {
+      if (!bytes) return 'Unknown';
+      const units = ['B', 'KB', 'MB', 'GB'];
+      let size = bytes;
+      let unitIndex = 0;
+      while (size >= 1024 && unitIndex < units.length - 1) {
+        size /= 1024;
+        unitIndex++;
+      }
+      return `${size.toFixed(2)} ${units[unitIndex]}`;
+    };
+    
+    // Format date
+    const formatDate = (dateString) => {
+      if (!dateString) return 'Unknown';
+      try {
+        const date = new Date(dateString);
+        return date.toLocaleString();
+      } catch (e) {
+        return dateString;
+      }
+    };
+    
     const manifestDiv = document.createElement('div');
     manifestDiv.id = 'manifest-' + tag;
     manifestDiv.className = 'manifest-details';
+    
+    let metadataHtml = '<div style="margin-bottom: 12px; color: #cccccc;">';
+    if (manifest.size) {
+      metadataHtml += `<div><strong>Size:</strong> ${formatSize(manifest.size)}</div>`;
+    }
+    if (manifest.createdDate) {
+      metadataHtml += `<div><strong>Created:</strong> ${formatDate(manifest.createdDate)}</div>`;
+    }
+    metadataHtml += '</div>';
+    
     manifestDiv.innerHTML = `
       <h3>Manifest for ${tag}</h3>
+      ${metadataHtml}
       <pre>${JSON.stringify(manifest, null, 2)}</pre>
     `;
 

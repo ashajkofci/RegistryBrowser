@@ -19,7 +19,10 @@
     "registry",
     "browser"
   ],
-  "author": "",
+  "author": {
+    "name": "Registry Browser",
+    "email": "registry-browser@example.com"
+  },
   "license": "MIT",
   "build": {
     "appId": "com.registrybrowser.app",
