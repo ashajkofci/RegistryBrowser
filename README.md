@@ -66,6 +66,28 @@ npm run package:mac     # macOS
 npm run package:linux   # Linux
 ```
 
+### Test
+
+```bash
+npm test
+npm run test:coverage
+```
+
+## Release Process
+
+The project includes an automated release pipeline via GitHub Actions that handles:
+1. **Testing** - Runs all tests with coverage
+2. **Version Bumping** - Automatically increments version (patch/minor/major)
+3. **Building & Packaging** - Compiles and packages for Windows, macOS, and Linux
+4. **Release** - Creates a GitHub release with all platform packages
+
+To trigger a release:
+1. Go to Actions tab in GitHub
+2. Select "Test, Version Bump, Build and Release" workflow
+3. Click "Run workflow"
+4. Choose version bump type (patch, minor, or major)
+5. The workflow will automatically test, bump version, build, and release
+
 ## How It Works
 
 Registry Browser uses the Docker Registry HTTP API V2 to communicate directly with Docker registries. It doesn't require Docker to be installed because it implements the registry protocol directly using HTTP requests.
