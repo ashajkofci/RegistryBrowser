@@ -208,21 +208,21 @@ async function selectRepository(repository) {
       const card = document.createElement('div');
       card.className = 'tag-card';
       
-      let metadataHtml = '';
-      if (manifest && manifest.annotations) {
-        const version = manifest.annotations['org.opencontainers.image.version'] || tag;
-        const created = manifest.annotations['org.opencontainers.image.created'];
-        
-        metadataHtml = `<div class="tag-name">${tag}</div>`;
+      let metadataHtml = `<div class="tag-name">${tag}</div>`;
+      
+      if (manifest) {
+        // Try to get version from annotations first
+        const version = manifest.annotations?.['org.opencontainers.image.version'];
         if (version && version !== tag) {
           metadataHtml += `<div style="font-size: 11px; color: #858585; margin-top: 4px;">Version: ${version}</div>`;
         }
+        
+        // Try to get created date from annotations, fallback to createdDate field
+        const created = manifest.annotations?.['org.opencontainers.image.created'] || manifest.createdDate;
         if (created) {
           const date = new Date(created);
           metadataHtml += `<div style="font-size: 11px; color: #858585; margin-top: 2px;">${date.toLocaleDateString()}</div>`;
         }
-      } else {
-        metadataHtml = `<div class="tag-name">${tag}</div>`;
       }
       
       card.innerHTML = metadataHtml;
@@ -281,36 +281,26 @@ async function showManifest(repository, tag) {
     
     let metadataHtml = '<div style="margin-bottom: 12px; color: #cccccc;">';
     
-    // Use annotations if available
-    if (manifest.annotations) {
-      const version = manifest.annotations['org.opencontainers.image.version'];
-      const created = manifest.annotations['org.opencontainers.image.created'];
-      const source = manifest.annotations['org.opencontainers.image.source'];
-      const url = manifest.annotations['org.opencontainers.image.url'];
-      
-      if (version) {
-        metadataHtml += `<div><strong>Version:</strong> ${version}</div>`;
-      }
-      if (created) {
-        metadataHtml += `<div><strong>Created:</strong> ${formatDate(created)}</div>`;
-      }
-      if (manifest.size) {
-        metadataHtml += `<div><strong>Size:</strong> ${formatSize(manifest.size)}</div>`;
-      }
-      if (source) {
-        metadataHtml += `<div><strong>Source:</strong> ${source}</div>`;
-      }
-      if (url) {
-        metadataHtml += `<div><strong>URL:</strong> ${url}</div>`;
-      }
-    } else {
-      // Fallback to basic metadata
-      if (manifest.size) {
-        metadataHtml += `<div><strong>Size:</strong> ${formatSize(manifest.size)}</div>`;
-      }
-      if (manifest.createdDate) {
-        metadataHtml += `<div><strong>Created:</strong> ${formatDate(manifest.createdDate)}</div>`;
-      }
+    // Try to get metadata from annotations first, fallback to direct fields
+    const version = manifest.annotations?.['org.opencontainers.image.version'];
+    const created = manifest.annotations?.['org.opencontainers.image.created'] || manifest.createdDate;
+    const source = manifest.annotations?.['org.opencontainers.image.source'];
+    const url = manifest.annotations?.['org.opencontainers.image.url'];
+    
+    if (version) {
+      metadataHtml += `<div><strong>Version:</strong> ${version}</div>`;
+    }
+    if (created) {
+      metadataHtml += `<div><strong>Created:</strong> ${formatDate(created)}</div>`;
+    }
+    if (manifest.size) {
+      metadataHtml += `<div><strong>Size:</strong> ${formatSize(manifest.size)}</div>`;
+    }
+    if (source) {
+      metadataHtml += `<div><strong>Source:</strong> ${source}</div>`;
+    }
+    if (url) {
+      metadataHtml += `<div><strong>URL:</strong> ${url}</div>`;
     }
     metadataHtml += '</div>';
     
