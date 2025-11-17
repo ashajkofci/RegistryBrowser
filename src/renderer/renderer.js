@@ -1,48 +1,33 @@
-/// <reference lib="dom" />
+// @ts-check
+/* global window, document */
 
-// Type definitions for electron API
-interface ElectronAPI {
-  saveCredentials: (credentials: any) => Promise<any>;
-  getCredentials: () => Promise<any>;
-  clearCredentials: () => Promise<any>;
-  testConnection: (config: any) => Promise<any>;
-  getRepositories: (config: any) => Promise<any>;
-  getTags: (config: any, repository: string) => Promise<any>;
-  getManifest: (config: any, repository: string, tag: string) => Promise<any>;
-  showAbout: () => Promise<any>;
-}
-
-interface Window {
-  electronAPI: ElectronAPI;
-}
-
-let currentConfig: any = null;
-let currentRepository: string | null = null;
+let currentConfig = null;
+let currentRepository = null;
 
 // UI Elements
-const loginScreen = document.getElementById('loginScreen')!;
-const browserScreen = document.getElementById('browserScreen')!;
-const loginError = document.getElementById('loginError')!;
-const loginSuccess = document.getElementById('loginSuccess')!;
-const registryUrlInput = document.getElementById('registryUrl') as HTMLInputElement;
-const usernameInput = document.getElementById('username') as HTMLInputElement;
-const passwordInput = document.getElementById('password') as HTMLInputElement;
-const saveCredentialsCheckbox = document.getElementById('saveCredentials') as HTMLInputElement;
-const connectBtn = document.getElementById('connectBtn') as HTMLButtonElement;
-const aboutBtn = document.getElementById('aboutBtn')!;
-const disconnectBtn = document.getElementById('disconnectBtn')!;
-const repositoryList = document.getElementById('repositoryList')!;
-const contentTitle = document.getElementById('contentTitle')!;
-const contentBody = document.getElementById('contentBody')!;
+const loginScreen = document.getElementById('loginScreen');
+const browserScreen = document.getElementById('browserScreen');
+const loginError = document.getElementById('loginError');
+const loginSuccess = document.getElementById('loginSuccess');
+const registryUrlInput = document.getElementById('registryUrl');
+const usernameInput = document.getElementById('username');
+const passwordInput = document.getElementById('password');
+const saveCredentialsCheckbox = document.getElementById('saveCredentials');
+const connectBtn = document.getElementById('connectBtn');
+const aboutBtn = document.getElementById('aboutBtn');
+const disconnectBtn = document.getElementById('disconnectBtn');
+const repositoryList = document.getElementById('repositoryList');
+const contentTitle = document.getElementById('contentTitle');
+const contentBody = document.getElementById('contentBody');
 
 // Utility Functions
-function showError(message: string) {
+function showError(message) {
   loginError.textContent = message;
   loginError.classList.remove('hidden');
   loginSuccess.classList.add('hidden');
 }
 
-function showSuccess(message: string) {
+function showSuccess(message) {
   loginSuccess.textContent = message;
   loginSuccess.classList.remove('hidden');
   loginError.classList.add('hidden');
@@ -121,7 +106,7 @@ connectBtn.addEventListener('click', async () => {
     await loadRepositories();
 
   } catch (error) {
-    showError((error as Error).message);
+    showError(error.message);
   } finally {
     connectBtn.disabled = false;
     connectBtn.textContent = 'Connect';
@@ -158,7 +143,7 @@ async function loadRepositories() {
     }
 
     repositoryList.innerHTML = '';
-    repositories.forEach((repo: string) => {
+    repositories.forEach((repo) => {
       const item = document.createElement('div');
       item.className = 'repository-item';
       item.textContent = repo;
@@ -167,12 +152,12 @@ async function loadRepositories() {
     });
 
   } catch (error) {
-    repositoryList.innerHTML = `<div class="error-message">${(error as Error).message}</div>`;
+    repositoryList.innerHTML = `<div class="error-message">${error.message}</div>`;
   }
 }
 
 // Select Repository
-async function selectRepository(repository: string) {
+async function selectRepository(repository) {
   currentRepository = repository;
   
   // Update active state
@@ -202,9 +187,9 @@ async function selectRepository(repository: string) {
     }
 
     contentBody.innerHTML = '<div class="tags-grid"></div>';
-    const tagsGrid = contentBody.querySelector('.tags-grid')!;
+    const tagsGrid = contentBody.querySelector('.tags-grid');
 
-    tags.forEach((tag: string) => {
+    tags.forEach((tag) => {
       const card = document.createElement('div');
       card.className = 'tag-card';
       card.innerHTML = `<div class="tag-name">${tag}</div>`;
@@ -213,12 +198,12 @@ async function selectRepository(repository: string) {
     });
 
   } catch (error) {
-    contentBody.innerHTML = `<div class="error-message">${(error as Error).message}</div>`;
+    contentBody.innerHTML = `<div class="error-message">${error.message}</div>`;
   }
 }
 
 // Show Manifest
-async function showManifest(repository: string, tag: string) {
+async function showManifest(repository, tag) {
   const existingManifest = document.getElementById('manifest-' + tag);
   if (existingManifest) {
     existingManifest.remove();
@@ -247,7 +232,7 @@ async function showManifest(repository: string, tag: string) {
     }
 
   } catch (error) {
-    alert((error as Error).message);
+    alert(error.message);
   }
 }
 
