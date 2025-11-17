@@ -1,0 +1,77 @@
+{
+  "name": "registry-browser",
+  "version": "1.0.0",
+  "description": "A Docker registry browser application",
+  "main": "dist/main/main.js",
+  "scripts": {
+    "build": "tsc && node build.js",
+    "start": "npm run build && electron .",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "package": "npm run build && electron-builder",
+    "package:win": "npm run build && electron-builder --win",
+    "package:mac": "npm run build && electron-builder --mac",
+    "package:linux": "npm run build && electron-builder --linux"
+  },
+  "keywords": [
+    "docker",
+    "registry",
+    "browser"
+  ],
+  "author": {
+    "name": "Registry Browser",
+    "email": "registry-browser@example.com"
+  },
+  "license": "MIT",
+  "build": {
+    "appId": "com.registrybrowser.app",
+    "productName": "Registry Browser",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "package.json"
+    ],
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
+      "category": "public.app-category.developer-tools"
+    },
+    "win": {
+      "target": [
+        "nsis"
+      ]
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Development"
+    }
+  },
+  "devDependencies": {
+    "@jest/globals": "^30.2.0",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^24.10.1",
+    "axios-mock-adapter": "^2.1.0",
+    "electron": "^39.2.1",
+    "electron-builder": "^26.0.12",
+    "jest": "^30.2.0",
+    "ts-jest": "^29.4.5",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "axios": "^1.13.2",
+    "electron-store": "^11.0.2"
+  }
+}
