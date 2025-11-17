@@ -18,7 +18,19 @@ function createWindow() {
     },
   });
 
-  mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'));
+  // In development, __dirname is dist/main, so we go up to project root then to src/renderer
+  // In production (packaged), the file will be in the app.asar or extracted
+  const isDev = !app.isPackaged;
+  const htmlPath = isDev
+    ? path.join(__dirname, '../../src/renderer/index.html')
+    : path.join(__dirname, '../renderer/index.html');
+  
+  mainWindow.loadFile(htmlPath);
+
+  // Open DevTools in development
+  if (isDev) {
+    mainWindow.webContents.openDevTools();
+  }
 
   mainWindow.on('closed', () => {
     mainWindow = null;

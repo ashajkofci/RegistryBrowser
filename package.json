@@ -4,14 +4,21 @@
   "description": "A Docker registry browser application",
   "main": "dist/main/main.js",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && node build.js",
     "start": "npm run build && electron .",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
     "package": "npm run build && electron-builder",
     "package:win": "npm run build && electron-builder --win",
     "package:mac": "npm run build && electron-builder --mac",
     "package:linux": "npm run build && electron-builder --linux"
   },
-  "keywords": ["docker", "registry", "browser"],
+  "keywords": [
+    "docker",
+    "registry",
+    "browser"
+  ],
   "author": "",
   "license": "MIT",
   "build": {
@@ -22,31 +29,43 @@
     },
     "files": [
       "dist/**/*",
-      "src/renderer/**/*",
-      "!src/renderer/**/*.ts"
+      "package.json"
     ],
     "mac": {
       "target": [
         {
           "target": "dmg",
-          "arch": ["x64", "arm64"]
+          "arch": [
+            "x64",
+            "arm64"
+          ]
         }
       ],
       "category": "public.app-category.developer-tools"
     },
     "win": {
-      "target": ["nsis"],
+      "target": [
+        "nsis"
+      ],
       "icon": "build/icon.ico"
     },
     "linux": {
-      "target": ["AppImage", "deb"],
+      "target": [
+        "AppImage",
+        "deb"
+      ],
       "category": "Development"
     }
   },
   "devDependencies": {
+    "@jest/globals": "^30.2.0",
+    "@types/jest": "^30.0.0",
     "@types/node": "^24.10.1",
+    "axios-mock-adapter": "^2.1.0",
     "electron": "^39.2.1",
     "electron-builder": "^26.0.12",
+    "jest": "^30.2.0",
+    "ts-jest": "^29.4.5",
     "typescript": "^5.9.3"
   },
   "dependencies": {
