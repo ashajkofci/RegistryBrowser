@@ -189,10 +189,43 @@ async function selectRepository(repository) {
     contentBody.innerHTML = '<div class="tags-grid"></div>';
     const tagsGrid = contentBody.querySelector('.tags-grid');
 
-    tags.forEach((tag) => {
+    // Fetch metadata for all tags
+    const tagPromises = tags.map(async (tag) => {
+      try {
+        const manifestResult = await window.electronAPI.getManifest(currentConfig, repository, tag);
+        if (manifestResult.success) {
+          return { tag, manifest: manifestResult.manifest };
+        }
+      } catch (e) {
+        console.error(`Failed to fetch manifest for ${tag}:`, e);
+      }
+      return { tag, manifest: null };
+    });
+
+    const tagMetadata = await Promise.all(tagPromises);
+
+    tagMetadata.forEach(({ tag, manifest }) => {
       const card = document.createElement('div');
       card.className = 'tag-card';
-      card.innerHTML = `<div class="tag-name">${tag}</div>`;
+      
+      let metadataHtml = '';
+      if (manifest && manifest.annotations) {
+        const version = manifest.annotations['org.opencontainers.image.version'] || tag;
+        const created = manifest.annotations['org.opencontainers.image.created'];
+        
+        metadataHtml = `<div class="tag-name">${tag}</div>`;
+        if (version && version !== tag) {
+          metadataHtml += `<div style="font-size: 11px; color: #858585; margin-top: 4px;">Version: ${version}</div>`;
+        }
+        if (created) {
+          const date = new Date(created);
+          metadataHtml += `<div style="font-size: 11px; color: #858585; margin-top: 2px;">${date.toLocaleDateString()}</div>`;
+        }
+      } else {
+        metadataHtml = `<div class="tag-name">${tag}</div>`;
+      }
+      
+      card.innerHTML = metadataHtml;
       card.addEventListener('click', () => showManifest(repository, tag));
       tagsGrid.appendChild(card);
     });
@@ -247,11 +280,37 @@ async function showManifest(repository, tag) {
     manifestDiv.className = 'manifest-details';
     
     let metadataHtml = '<div style="margin-bottom: 12px; color: #cccccc;">';
-    if (manifest.size) {
-      metadataHtml += `<div><strong>Size:</strong> ${formatSize(manifest.size)}</div>`;
-    }
-    if (manifest.createdDate) {
-      metadataHtml += `<div><strong>Created:</strong> ${formatDate(manifest.createdDate)}</div>`;
+    
+    // Use annotations if available
+    if (manifest.annotations) {
+      const version = manifest.annotations['org.opencontainers.image.version'];
+      const created = manifest.annotations['org.opencontainers.image.created'];
+      const source = manifest.annotations['org.opencontainers.image.source'];
+      const url = manifest.annotations['org.opencontainers.image.url'];
+      
+      if (version) {
+        metadataHtml += `<div><strong>Version:</strong> ${version}</div>`;
+      }
+      if (created) {
+        metadataHtml += `<div><strong>Created:</strong> ${formatDate(created)}</div>`;
+      }
+      if (manifest.size) {
+        metadataHtml += `<div><strong>Size:</strong> ${formatSize(manifest.size)}</div>`;
+      }
+      if (source) {
+        metadataHtml += `<div><strong>Source:</strong> ${source}</div>`;
+      }
+      if (url) {
+        metadataHtml += `<div><strong>URL:</strong> ${url}</div>`;
+      }
+    } else {
+      // Fallback to basic metadata
+      if (manifest.size) {
+        metadataHtml += `<div><strong>Size:</strong> ${formatSize(manifest.size)}</div>`;
+      }
+      if (manifest.createdDate) {
+        metadataHtml += `<div><strong>Created:</strong> ${formatDate(manifest.createdDate)}</div>`;
+      }
     }
     metadataHtml += '</div>';
     
