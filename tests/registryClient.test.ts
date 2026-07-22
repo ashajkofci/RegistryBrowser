@@ -216,6 +216,33 @@ describe('RegistryClient', () => {
     });
   });
 
+  describe('deleteImage', () => {
+    const repository = 'my-repo';
+    const tag = 'v1.0.0';
+    const digest = 'sha256:abc123';
+
+    it('should resolve the digest and delete the manifest', async () => {
+      mock.onGet(`${registryUrl}/v2/${repository}/manifests/${tag}`).reply((config) => {
+        expect(config.headers?.Accept).toContain('application/vnd.docker.distribution.manifest.v2+json');
+        return [200, {}, { 'docker-content-digest': digest }];
+      });
+      mock.onDelete(`${registryUrl}/v2/${repository}/manifests/${digest}`).reply(202);
+
+      const client = new RegistryClient(registryUrl, username, password);
+      await expect(client.deleteImage(repository, tag)).resolves.toBeUndefined();
+    });
+
+    it('should explain when deletion is disabled', async () => {
+      mock.onGet(`${registryUrl}/v2/${repository}/manifests/${tag}`).reply(200, {}, {
+        'docker-content-digest': digest,
+      });
+      mock.onDelete(`${registryUrl}/v2/${repository}/manifests/${digest}`).reply(405);
+
+      const client = new RegistryClient(registryUrl, username, password);
+      await expect(client.deleteImage(repository, tag)).rejects.toThrow('Image deletion is disabled');
+    });
+  });
+
   describe('URL handling', () => {
     it('should handle registry URL with trailing slash', async () => {
       const repositories = ['repo1'];

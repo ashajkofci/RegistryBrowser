@@ -1,5 +1,7 @@
 import axios, { AxiosInstance } from 'axios';
 
+const MANIFEST_ACCEPT = 'application/vnd.docker.distribution.manifest.v2+json, application/vnd.docker.distribution.manifest.list.v2+json, application/vnd.oci.image.manifest.v1+json';
+
 export interface Repository {
   name: string;
 }
@@ -99,7 +101,7 @@ export class RegistryClient {
     try {
       const response = await this.client.get(`/v2/${repository}/manifests/${tag}`, {
         headers: {
-          'Accept': 'application/vnd.docker.distribution.manifest.v2+json, application/vnd.docker.distribution.manifest.list.v2+json, application/vnd.oci.image.manifest.v1+json',
+          'Accept': MANIFEST_ACCEPT,
         },
       });
       
@@ -149,6 +151,35 @@ export class RegistryClient {
           throw new Error('Authentication failed');
         }
         throw new Error(`Failed to fetch manifest: ${error.message}`);
+      }
+      throw error;
+    }
+  }
+
+  async deleteImage(repository: string, tag: string): Promise<void> {
+    try {
+      const response = await this.client.get(`/v2/${repository}/manifests/${tag}`, {
+        headers: { 'Accept': MANIFEST_ACCEPT },
+      });
+      const digest = response.headers['docker-content-digest'];
+
+      if (typeof digest !== 'string' || !/^[A-Za-z0-9_+.-]+:[A-Fa-f0-9]+$/.test(digest)) {
+        throw new Error('Registry did not return a manifest digest');
+      }
+
+      await this.client.delete(`/v2/${repository}/manifests/${digest}`);
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 404) {
+          throw new Error('Image not found');
+        }
+        if (error.response?.status === 401 || error.response?.status === 403) {
+          throw new Error('Not authorized to delete this image');
+        }
+        if (error.response?.status === 405) {
+          throw new Error('Image deletion is disabled by this registry');
+        }
+        throw new Error(`Failed to delete image: ${error.message}`);
       }
       throw error;
     }

@@ -9,5 +9,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getTags: (config: any, repository: string) => ipcRenderer.invoke('get-tags', config, repository),
   getManifest: (config: any, repository: string, tag: string) => 
     ipcRenderer.invoke('get-manifest', config, repository, tag),
+  deleteImage: (config: any, repository: string, tag: string) =>
+    ipcRenderer.invoke('delete-image', config, repository, tag),
   showAbout: () => ipcRenderer.invoke('show-about'),
 });

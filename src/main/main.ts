@@ -122,6 +122,16 @@ ipcMain.handle('get-manifest', async (_event, config, repository, tag) => {
   }
 });
 
+ipcMain.handle('delete-image', async (_event, config, repository, tag) => {
+  try {
+    const client = new RegistryClient(config.registryUrl, config.username, config.password);
+    await client.deleteImage(repository, tag);
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: (error as Error).message };
+  }
+});
+
 ipcMain.handle('show-about', async () => {
   dialog.showMessageBox({
     type: 'info',

@@ -305,10 +305,33 @@ async function showManifest(repository, tag) {
     metadataHtml += '</div>';
     
     manifestDiv.innerHTML = `
-      <h3>Manifest for ${tag}</h3>
+      <div class="manifest-heading">
+        <h3>Manifest for ${tag}</h3>
+        <button type="button" class="danger">Delete image</button>
+      </div>
       ${metadataHtml}
       <pre>${JSON.stringify(manifest, null, 2)}</pre>
     `;
+
+    const deleteButton = manifestDiv.querySelector('button');
+    deleteButton.addEventListener('click', async () => {
+      if (!confirm(`Delete ${repository}:${tag}?\n\nThis is permanent and may also remove other tags referencing the same image.`)) {
+        return;
+      }
+
+      deleteButton.disabled = true;
+      deleteButton.textContent = 'Deleting...';
+
+      const deleteResult = await window.electronAPI.deleteImage(currentConfig, repository, tag);
+      if (!deleteResult.success) {
+        deleteButton.disabled = false;
+        deleteButton.textContent = 'Delete image';
+        alert(deleteResult.error || 'Failed to delete image');
+        return;
+      }
+
+      await selectRepository(repository);
+    });
 
     const tagsGrid = contentBody.querySelector('.tags-grid');
     if (tagsGrid) {
