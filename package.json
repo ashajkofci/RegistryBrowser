@@ -1,6 +1,6 @@
 {
   "name": "registry-browser",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "A Docker registry browser application",
   "main": "dist/main/main.js",
   "scripts": {
